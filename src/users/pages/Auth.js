@@ -1,19 +1,22 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 
 import Card from "../../shared/components/UIElements/Card";
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
 import { useForm } from "../../shared/hooks/form-hook";
-
-import style from "./Auth.module.css";
+import { AuthContext } from "../../shared/context/auth-context";
+import { useHistory } from "react-router-dom";
 import {
 	VALIDATOR_EMAIL,
 	VALIDATOR_MINLENGTH,
 	VALIDATOR_REQUIRE,
 } from "../../shared/util/validators";
 
+import style from "./Auth.module.css";
 const Auth = () => {
 	const [isLoginMode, setIsLoginMode] = useState(true);
+	const authCtx = useContext(AuthContext);
+	const history = useHistory();
 
 	const [formState, inputHandler, setFormData] = useForm({
 		email: {
@@ -28,6 +31,12 @@ const Auth = () => {
 
 	const submitHandler = event => {
 		event.preventDefault();
+
+		if (isLoginMode) {
+			authCtx.login();
+		}
+
+		history.push("/");
 	};
 
 	const switchModeHandler = () => {
