@@ -1,0 +1,20 @@
+{
+	"name": "socialmap",
+	"version": "1.0.0",
+	"license": "MIT",
+	"description": "Handle scripts for the frontend and backend",
+	"scripts": {
+		"install": "run-p install:backend install:frontend",
+		"install:backend": "npm install --prefix backend && cd ..",
+		"install:frontend": "npm install --prefix frontend && cd ..",
+		"start": "run-p start:backend start:frontend",
+		"start:backend": "npm run start --prefix backend && cd ..",
+		"start:frontend": "npm run start --prefix frontend && cd ..",
+		"build": "run-p build:backend build:frontend",
+		"build:backend": "npm run build --prefix backend && cd ..",
+		"build:frontend": "npm run build --prefix frontend && cd .."
+	},
+	"devDependencies": {
+		"npm-run-all": "^4.1.5"
+	}
+}
