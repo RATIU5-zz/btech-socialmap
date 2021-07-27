@@ -6,6 +6,7 @@ import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import Button from "../../shared/components/FormElements/Button";
 import { useForm } from "../../shared/hooks/form-hook";
+import { useHttpClient } from "../../shared/hooks/http-hook";
 import { AuthContext } from "../../shared/context/auth-context";
 import { useHistory } from "react-router-dom";
 import {
@@ -17,10 +18,8 @@ import {
 import style from "./Auth.module.css";
 const Auth = () => {
 	const [isLoginMode, setIsLoginMode] = useState(true);
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState(undefined);
 	const authCtx = useContext(AuthContext);
-	const history = useHistory();
+	const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
 	const [formState, inputHandler, setFormData] = useForm({
 		email: {
@@ -35,13 +34,9 @@ const Auth = () => {
 
 	const submitHandler = async event => {
 		event.preventDefault();
-
-		setIsLoading(true);
-		let res;
 		if (isLoginMode) {
 			try {
-				setError(null);
-				res = await fetch("http://localhost:5000/api/users/login", {
+				await sendRequest("http://localhost:5000/api/users/login", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -51,21 +46,11 @@ const Auth = () => {
 						password: formState.inputs.password.value,
 					}),
 				});
-				if (!res.ok) throw new Error(data.message);
-
-				const data = await res.json();
-
-				setIsLoading(false);
-
 				authCtx.login();
-			} catch (err) {
-				setIsLoading(false);
-				setError(err.message || "Something went wrong...");
-			}
+			} catch (err) {}
 		} else {
 			try {
-				setError(null);
-				res = await fetch("http://localhost:5000/api/users/signup", {
+				await sendRequest("http://localhost:5000/api/users/signup", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -76,19 +61,8 @@ const Auth = () => {
 						password: formState.inputs.password.value,
 					}),
 				});
-
-				const data = await res.json();
-				if (!res.ok) {
-					throw new Error(data.message);
-				}
-
-				setIsLoading(false);
-
 				authCtx.login();
-			} catch (err) {
-				setIsLoading(false);
-				setError(err.message || "Something went wrong...");
-			}
+			} catch (err) {}
 		}
 	};
 
@@ -115,7 +89,7 @@ const Auth = () => {
 	};
 
 	const errorHandler = () => {
-		setError(null);
+		clearError();
 	};
 
 	return (

@@ -1,32 +1,25 @@
 import React, { useEffect, useState } from "react";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import { useHttpClient } from "../../shared/hooks/http-hook";
 import UsersList from "../components/UsersList";
 
 const Users = () => {
 	const [users, setUsers] = useState([]);
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState(null);
+	const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
 	useEffect(() => {
-		const sendRequest = async () => {
-			setIsLoading(true);
+		const getUsers = async () => {
 			try {
-				const res = await fetch("http://localhost:5000/api/users");
-				if (!res.ok) throw new Error(data.message);
-
-				const data = await res.json();
+				const data = await sendRequest("http://localhost:5000/api/users");
 				setUsers(data.users);
-			} catch (err) {
-				setError(err.message);
-			}
-			setIsLoading(false);
+			} catch (err) {}
 		};
-		sendRequest();
-	}, [setIsLoading]);
+		getUsers();
+	}, []);
 
 	const errorHandler = () => {
-		setError(null);
+		clearError(null);
 	};
 
 	return (
