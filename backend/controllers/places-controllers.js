@@ -2,7 +2,9 @@ const HTTPError = require("../models/http-error");
 const { validationResult } = require("express-validator");
 const { v4: uuidv4 } = require("uuid");
 const { getCoordsForAddress } = require("../util/location");
+const mongoose = require("mongoose");
 const Place = require("../models/place");
+const User = require("../models/user");
 
 const getPlaceById = async (req, res, next) => {
 	const placeId = req.params.pid;
@@ -66,8 +68,25 @@ const createPlace = async (req, res, next) => {
 		creator,
 	});
 
+	let user;
 	try {
-		await createdPlace.save();
+		user = await User.findById(creator);
+	} catch (err) {
+		return next(new HTTPError(404, "Could not find user for provided id"));
+	}
+
+	if (!user) {
+		return next(new HTTPError(500, `Error: Creating place failed; ${err}`));
+	}
+
+	try {
+		// Use a session so if something fails, all changes will roll back without updating the database
+		const session = await mongoose.startSession();
+		session.startTransaction();
+		await createdPlace.save({ session });
+		user.places.push(createdPlace);
+		await user.save({ session });
+		await session.commitTransaction();
 	} catch (err) {
 		return next(new HTTPError(500, `Error: Creating place failed; ${err}`));
 	}
