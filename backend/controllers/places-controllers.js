@@ -27,20 +27,25 @@ const getPlaceById = async (req, res, next) => {
 
 const getPlacesByUserId = async (req, res, next) => {
 	const userId = req.params.uid;
-	let places;
+
+	// let places;
+
+	let userWithPlaces;
 
 	try {
-		places = await Place.find({ creator: userId });
+		userWithPlaces = await User.findById(userId).populate("places");
 	} catch (err) {
-		return next(new HTTPError(500, `Error: Searching for place failed; ${err}`));
+		return next(new HTTPError(404, "Could not find places for the provided user id."));
 	}
 
-	if (!places || places.length === 0) {
+	console.log(userWithPlaces);
+
+	if (!userWithPlaces || userWithPlaces.places.length === 0) {
 		return next(new HTTPError(404, "Could not find places for the provided user id."));
 	}
 
 	res.json({
-		places: places.map(place => place.toObject({ getters: true })),
+		places: userWithPlaces.places.map(place => place.toObject({ getters: true })),
 	});
 };
 
@@ -91,7 +96,7 @@ const createPlace = async (req, res, next) => {
 		return next(new HTTPError(500, `Error: Creating place failed; ${err}`));
 	}
 
-	res.status(201).json({ place: createdPlace }); // 201 is successfully created code
+	res.status(201).json({ place: createdPlace.toObject({ getters: true }) }); // 201 is successfully created code
 };
 
 const updatePlaceById = async (req, res, next) => {
@@ -132,7 +137,7 @@ const deletePlaceById = async (req, res, next) => {
 	let place;
 
 	try {
-		place = await Place.findById(placeId);
+		place = await Place.findById(placeId).populate("creator");
 	} catch (err) {
 		return next(new HTTPError(500, `Error: Searching for place failed; ${err}`));
 	}
@@ -142,7 +147,13 @@ const deletePlaceById = async (req, res, next) => {
 	}
 
 	try {
-		await place.remove();
+		// Use a session so if something fails, all changes will roll back without updating the database
+		const session = await mongoose.startSession();
+		session.startTransaction();
+		await place.remove({ session });
+		place.creator.places.pull(place);
+		await place.creator.save({ session });
+		await session.commitTransaction();
 	} catch (err) {
 		return next(new HTTPError(500, `Error: Deleting place failed; ${err}`));
 	}
