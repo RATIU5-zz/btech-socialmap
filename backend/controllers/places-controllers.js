@@ -18,29 +18,41 @@ let DUMMY_PLACES = [
 	},
 ];
 
-const getPlaceById = (req, res, next) => {
+const getPlaceById = async (req, res, next) => {
 	const placeId = req.params.pid;
-	const place = DUMMY_PLACES.find(p => p.id === placeId);
+
+	let place;
+	try {
+		place = await Place.findById(placeId);
+	} catch (err) {
+		return next(new HTTPError(500, `Error occured while searching for place; ${err}`));
+	}
 
 	if (!place) {
 		return next(new HTTPError(404, "Could not find a place for the provided id."));
 	}
 
 	res.json({
-		place,
+		place: place.toObject({ getters: true }),
 	});
 };
 
-const getPlacesByUserId = (req, res, next) => {
+const getPlacesByUserId = async (req, res, next) => {
 	const userId = req.params.uid;
-	const places = DUMMY_PLACES.filter(p => p.creator === userId);
+	let places;
+
+	try {
+		places = await Place.find({ creator: userId });
+	} catch (err) {
+		return next(new HTTPError(500, `Error occured while searching for places; ${err}`));
+	}
 
 	if (!places || places.length === 0) {
 		return next(new HTTPError(404, "Could not find places for the provided user id."));
 	}
 
 	res.json({
-		places,
+		places: places.map(place => place.toObject({ getters: true })),
 	});
 };
 
