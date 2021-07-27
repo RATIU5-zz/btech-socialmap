@@ -30,7 +30,7 @@ const signUserUp = async (req, res, next) => {
 	try {
 		existingUser = await User.findOne({ email });
 	} catch (err) {
-		return next(new HTTPError(500, `Error creating user account; ${err}`));
+		return next(new HTTPError(500, `Error: Signing user up failed; ${err}`));
 	}
 
 	if (existingUser) {
@@ -54,18 +54,22 @@ const signUserUp = async (req, res, next) => {
 	res.status(201).json({ user: createdUser.toObject({ getters: true }) }); // 201 is successfully created code
 };
 
-const logUserIn = (req, res, next) => {
+const logUserIn = async (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		return next(new HTTPError(422, "Invalid inputs passed."));
 	}
-
 	const { email, password } = req.body;
 
-	const user = DUMMY_USERS.find(u => u.email === email);
+	let existingUser;
+	try {
+		existingUser = await User.findOne({ email });
+	} catch (err) {
+		return next(new HTTPError(500, `Error: Logging user in failed; ${err}`));
+	}
 
-	if (!user || user.password !== password) {
-		return next(new HTTPError(401, "Could not find a user for the provided credentials."));
+	if (!existingUser || existingUser.password !== password) {
+		return next(new HTTPError(401, "Failed to log user in"));
 	}
 
 	res.status(200).json({ message: "Logged in" });
