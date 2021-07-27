@@ -51,11 +51,9 @@ const Auth = () => {
 						password: formState.inputs.password.value,
 					}),
 				});
+				if (!res.ok) throw new Error(data.message);
 
 				const data = await res.json();
-				if (!res.ok) {
-					throw new Error(data.message);
-				}
 
 				setIsLoading(false);
 
