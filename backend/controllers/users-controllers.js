@@ -2,6 +2,8 @@ const HTTPError = require("../models/http-error");
 const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
 
+const User = require("../models/users");
+
 let DUMMY_USERS = [
 	{
 		id: "u1",
@@ -17,36 +19,45 @@ const getUsers = (req, res, next) => {
 	});
 };
 
-const signUserUp = (req, res, next) => {
+const signUserUp = async (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
-		throw new HTTPError(422, "Invalid inputs passed.");
+		return next(new HTTPError(422, "Invalid inputs passed."));
 	}
-
 	const { name, email, password } = req.body;
 
-	const hasUser = DUMMY_USERS.find(u => u.email === email);
-
-	if (hasUser) {
-		throw new HTTPError(422, "Could not create user with already existing email"); // 422 Invalid user inpur
+	let existingUser;
+	try {
+		existingUser = await User.findOne({ email });
+	} catch (err) {
+		return next(new HTTPError(500, `Error creating user account; ${err}`));
 	}
 
-	const createdUser = {
-		id: uuidv4(),
+	if (existingUser) {
+		return next(new HTTPError(422, "Cannot use an email that is already in use"));
+	}
+
+	const createdUser = new User({
 		name,
 		email,
 		password,
-	};
+		image: "https://images.unsplash.com/photo-1626639900810-cfebc6de0eae?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=934&q=80",
+		places: 0,
+	});
 
-	DUMMY_USERS.push(createdUser);
+	try {
+		await createdUser.save();
+	} catch (err) {
+		return next(new HTTPError(500, `Error: Signing user up failed; ${err}`));
+	}
 
-	res.status(201).json({ user: createdUser }); // 201 is successfully created code
+	res.status(201).json({ user: createdUser.toObject({ getters: true }) }); // 201 is successfully created code
 };
 
 const logUserIn = (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
-		throw new HTTPError(422, "Invalid inputs passed.");
+		return next(new HTTPError(422, "Invalid inputs passed."));
 	}
 
 	const { email, password } = req.body;
@@ -54,7 +65,7 @@ const logUserIn = (req, res, next) => {
 	const user = DUMMY_USERS.find(u => u.email === email);
 
 	if (!user || user.password !== password) {
-		throw new HTTPError(401, "Could not find a user for the provided credentials.");
+		return next(new HTTPError(401, "Could not find a user for the provided credentials."));
 	}
 
 	res.status(200).json({ message: "Logged in" });
