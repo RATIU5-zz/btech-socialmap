@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 
 const express = require("express");
 const bP = require("body-parser");
@@ -11,6 +12,8 @@ const app = express();
 
 app.use(express.json());
 
+app.use("/uploads/images", express.static(path.join("uploads", "images")));
+
 app.use((req, res, next) => {
 	res.setHeader("Access-Control-Allow-Origin", "*");
 	res.setHeader(
@@ -22,7 +25,6 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/places", placesRoutes);
-
 app.use("/api/users", usersRoutes);
 
 app.use((req, res, next) => {
