@@ -16,7 +16,7 @@ const Users = () => {
 			} catch (err) {}
 		};
 		getUsers();
-	}, []);
+	}, [sendRequest]);
 	return (
 		<>
 			<ErrorModal error={error} onClear={clearError} />

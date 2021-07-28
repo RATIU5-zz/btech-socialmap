@@ -39,8 +39,6 @@ const getPlacesByUserId = async (req, res, next) => {
 		return next(new HTTPError(404, "Could not find places for the provided user id."));
 	}
 
-	console.log(userWithPlaces);
-
 	if (!userWithPlaces || userWithPlaces.places.length === 0) {
 		return next(new HTTPError(404, "Could not find places for the provided user id."));
 	}
@@ -56,7 +54,7 @@ const createPlace = async (req, res, next) => {
 		return next(new HTTPError(422, "Invalid inputs passed."));
 	}
 
-	const { title, description, address, creator } = req.body;
+	const { title, description, address } = req.body;
 
 	let coords;
 	try {
@@ -71,12 +69,12 @@ const createPlace = async (req, res, next) => {
 		address,
 		location: coords,
 		image: req.file.path,
-		creator,
+		creator: req.userData.userId,
 	});
 
 	let user;
 	try {
-		user = await User.findById(creator);
+		user = await User.findById(req.userData.userId);
 	} catch (err) {
 		return next(new HTTPError(404, "Could not find user for provided id"));
 	}

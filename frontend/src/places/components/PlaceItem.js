@@ -94,7 +94,6 @@ const PlaceItem = props => {
 								<Button onClick={openMapHandler} inverse>
 									VIEW ON MAP
 								</Button>
-								{console.log(authCtx.userId, props.creatorId)}
 								{authCtx.userId === props.creatorId && (
 									<Button to={`/places/${props.id}`}>EDIT</Button>
 								)}
