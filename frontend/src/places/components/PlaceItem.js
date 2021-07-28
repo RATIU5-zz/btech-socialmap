@@ -4,12 +4,16 @@ import Button from "../../shared/components/FormElements/Button";
 import Modal from "../../shared/components/UIElements/Modal";
 import Map from "../../shared/components/UIElements/Map";
 import { AuthContext } from "../../shared/context/auth-context";
+import { useHttpClient } from "../../shared/hooks/http-hook";
 
 import style from "./PlaceItem.module.css";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 
 const PlaceItem = props => {
 	const [showMap, setShowMap] = useState(false);
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
 	const authCtx = useContext(AuthContext);
 
@@ -19,12 +23,19 @@ const PlaceItem = props => {
 	const openDeleteModalHandler = () => setShowDeleteModal(true);
 	const closeDeleteModalHandler = () => setShowDeleteModal(false);
 
-	const deletePlaceHandler = () => {
+	const deletePlaceHandler = async () => {
 		closeDeleteModalHandler();
+		try {
+			await sendRequest(`http://localhost:5000/api/places/${props.id}`, {
+				method: "DELETE",
+			});
+			props.onDeletePlace(props.id);
+		} catch (err) {}
 	};
 
 	return (
 		<>
+			<ErrorModal error={error} onClear={clearError} />
 			<Modal
 				show={showMap}
 				onClose={closeMapHandler}
@@ -62,25 +73,33 @@ const PlaceItem = props => {
 
 			<li className={`${style["place-item"]}`}>
 				<Card className={`${style["place-item__content"]}`}>
-					<div className={`${style["place-item__image"]}`}>
-						<img src={props.image} alt={props.title} />
-					</div>
-					<div className={`${style["place-item__info"]}`}>
-						<h2>{props.title}</h2>
-						<h3>{props.address}</h3>
-						<p>{props.description}</p>
-					</div>
-					<div className={`${style["place-item__actions"]}`}>
-						<Button onClick={openMapHandler} inverse>
-							VIEW ON MAP
-						</Button>
-						{authCtx.isLoggedIn && <Button to={`/places/${props.id}`}>EDIT</Button>}
-						{authCtx.isLoggedIn && (
-							<Button onClick={openDeleteModalHandler} danger>
-								DELETE
-							</Button>
-						)}
-					</div>
+					{isLoading && <LoadingSpinner asOverlay />}
+					{!isLoading && (
+						<>
+							<div className={`${style["place-item__image"]}`}>
+								<img src={props.image} alt={props.title} />
+							</div>
+							<div className={`${style["place-item__info"]}`}>
+								<h2>{props.title}</h2>
+								<h3>{props.address}</h3>
+								<p>{props.description}</p>
+							</div>
+							<div className={`${style["place-item__actions"]}`}>
+								<Button onClick={openMapHandler} inverse>
+									VIEW ON MAP
+								</Button>
+								{console.log(authCtx.userId, props.creatorId)}
+								{authCtx.userId === props.creatorId && (
+									<Button to={`/places/${props.id}`}>EDIT</Button>
+								)}
+								{authCtx.userId === props.creatorId && (
+									<Button onClick={openDeleteModalHandler} danger>
+										DELETE
+									</Button>
+								)}
+							</div>
+						</>
+					)}
 				</Card>
 			</li>
 		</>
