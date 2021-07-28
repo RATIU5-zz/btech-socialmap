@@ -8,7 +8,6 @@ import Button from "../../shared/components/FormElements/Button";
 import { useForm } from "../../shared/hooks/form-hook";
 import { useHttpClient } from "../../shared/hooks/http-hook";
 import { AuthContext } from "../../shared/context/auth-context";
-import { useHistory } from "react-router-dom";
 import {
 	VALIDATOR_EMAIL,
 	VALIDATOR_MINLENGTH,
@@ -16,6 +15,7 @@ import {
 } from "../../shared/util/validators";
 
 import style from "./Auth.module.css";
+import ImageUpload from "../../shared/components/FormElements/ImageUpload";
 const Auth = () => {
 	const [isLoginMode, setIsLoginMode] = useState(true);
 	const authCtx = useContext(AuthContext);
@@ -72,6 +72,7 @@ const Auth = () => {
 				{
 					...formState.inputs,
 					name: undefined,
+					image: undefined,
 				},
 				formState.inputs.email.isValid && formState.inputs.password.isValid
 			);
@@ -80,6 +81,10 @@ const Auth = () => {
 				...formState.inputs,
 				name: {
 					value: "",
+					isValid: false,
+				},
+				image: {
+					value: null,
 					isValid: false,
 				},
 			});
@@ -122,6 +127,7 @@ const Auth = () => {
 						errorText="Please enter a valid password (6 characters minimum)"
 						onInput={inputHandler}
 					/>
+					{!isLoginMode && <ImageUpload id="image" onInput={inputHandler} center />}
 					<Button type="submit" disabled={!formState.isValid}>
 						{isLoginMode ? "Login" : "Signup"}
 					</Button>
