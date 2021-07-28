@@ -106,7 +106,6 @@ const updatePlaceById = async (req, res, next) => {
 		return next(new HTTPError(422, "Invalid inputs passed."));
 	}
 	const { title, description } = req.body;
-	console.log(req.params.pid);
 	const placeId = req.params.pid;
 
 	let place;
@@ -119,6 +118,9 @@ const updatePlaceById = async (req, res, next) => {
 	if (!place) {
 		return next(new HTTPError(404, "Could not find a place for the provided id."));
 	}
+
+	if (place.creator.toString() !== req.userData.userId)
+		return next(new HTTPError(401, `Authorization failed!`));
 
 	place.title = title;
 	place.description = description;
@@ -146,6 +148,9 @@ const deletePlaceById = async (req, res, next) => {
 	if (!place) {
 		return next(new HTTPError(404, "Could not find a place for the provided id."));
 	}
+
+	if (place.creator.id !== req.userData.userId)
+		return next(new HTTPError(401, `Authorization failed!`));
 
 	const imagePath = place.image;
 

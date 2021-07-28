@@ -88,7 +88,7 @@ const logUserIn = async (req, res, next) => {
 	}
 
 	if (!existingUser) {
-		return next(new HTTPError(401, "Failed to log user in"));
+		return next(new HTTPError(403, "Failed to log user in"));
 	}
 
 	let isValidPassword = false;
@@ -100,7 +100,7 @@ const logUserIn = async (req, res, next) => {
 	}
 
 	if (!isValidPassword) {
-		return next(new HTTPError(401, "Failed to log user in"));
+		return next(new HTTPError(403, "Failed to log user in"));
 	}
 
 	let token;
