@@ -125,7 +125,14 @@ const Auth = () => {
 						errorText="Please enter a valid password (6 characters minimum)"
 						onInput={inputHandler}
 					/>
-					{!isLoginMode && <ImageUpload id="image" onInput={inputHandler} center />}
+					{!isLoginMode && (
+						<ImageUpload
+							id="image"
+							onInput={inputHandler}
+							errorText="Please provide a profile image"
+							center
+						/>
+					)}
 					<Button type="submit" disabled={!formState.isValid}>
 						{isLoginMode ? "Login" : "Signup"}
 					</Button>
