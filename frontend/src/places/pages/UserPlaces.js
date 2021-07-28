@@ -24,7 +24,7 @@ const UserPlaces = props => {
 		<>
 			<ErrorModal error={error} onClear={clearError} />
 			{isLoading && (
-				<div class="center">
+				<div className="center">
 					<LoadingSpinner />
 				</div>
 			)}
