@@ -17,14 +17,9 @@ const Users = () => {
 		};
 		getUsers();
 	}, []);
-
-	const errorHandler = () => {
-		clearError(null);
-	};
-
 	return (
 		<>
-			<ErrorModal error={error} onClear={errorHandler} />
+			<ErrorModal error={error} onClear={clearError} />
 			{isLoading && (
 				<div className="center">
 					<LoadingSpinner />

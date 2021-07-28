@@ -88,13 +88,9 @@ const Auth = () => {
 		setIsLoginMode(prevMode => !prevMode);
 	};
 
-	const errorHandler = () => {
-		clearError();
-	};
-
 	return (
 		<>
-			<ErrorModal error={error} onClear={errorHandler} />
+			<ErrorModal error={error} onClear={clearError} />
 			<Card className={`${style.authentication}`}>
 				{isLoading && <LoadingSpinner asOverlay />}
 				<h2>{isLoginMode ? "Login" : "Signup"} Required</h2>
