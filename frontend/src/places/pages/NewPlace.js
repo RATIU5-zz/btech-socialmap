@@ -46,7 +46,10 @@ const NewPlace = () => {
 			formData.append("image", formState.inputs.image.value);
 			await sendRequest("http://localhost:5000/api/places", {
 				method: "POST",
-				body: formData, // When using FormData, headers are automatically sent
+				body: formData,
+				headers: {
+					Authorization: `Bearer ${authCtx.token}`,
+				},
 			});
 			history.push("/");
 		} catch (err) {}

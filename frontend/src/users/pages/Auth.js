@@ -46,7 +46,7 @@ const Auth = () => {
 						password: formState.inputs.password.value,
 					}),
 				});
-				authCtx.login(data.user.id);
+				authCtx.login(data.userId, data.token);
 			} catch (err) {}
 		} else {
 			try {
@@ -59,7 +59,7 @@ const Auth = () => {
 					method: "POST",
 					body: formData,
 				});
-				authCtx.login(data.user.id);
+				authCtx.login(data.userId, data.token);
 			} catch (err) {}
 		}
 	};
