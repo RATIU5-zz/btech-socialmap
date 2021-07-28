@@ -1,6 +1,8 @@
 const HTTPError = require("../models/http-error");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const User = require("../models/user");
 
@@ -54,7 +56,21 @@ const signUserUp = async (req, res, next) => {
 		return next(new HTTPError(500, `Error: Signing user up failed; ${err}`));
 	}
 
-	res.status(201).json({ user: createdUser.toObject({ getters: true }) }); // 201 is successfully created code
+	let token;
+	try {
+		token = jwt.sign(
+			{
+				userId: createdUser.id,
+				email: createdUser.email,
+			},
+			process.env.TOKEN_SECRET,
+			{ expiresIn: "1h" }
+		);
+	} catch (err) {
+		return next(new HTTPError(500, `Error: Signing user up failed; ${err}`));
+	}
+
+	res.status(201).json({ userId: createdUser.id, email: createdUser.email, token });
 };
 
 const logUserIn = async (req, res, next) => {
@@ -87,7 +103,21 @@ const logUserIn = async (req, res, next) => {
 		return next(new HTTPError(401, "Failed to log user in"));
 	}
 
-	res.status(200).json({ message: "Logged in", user: existingUser.toObject({ getters: true }) });
+	let token;
+	try {
+		token = jwt.sign(
+			{
+				userId: existingUser.id,
+				email: existingUser.email,
+			},
+			process.env.TOKEN_SECRET,
+			{ expiresIn: "1h" }
+		);
+	} catch (err) {
+		return next(new HTTPError(500, `Error: Logging user in failed; ${err}`));
+	}
+
+	res.status(200).json({ userId: existingUser.id, email: existingUser.email, token });
 };
 
 exports.getUsers = getUsers;
