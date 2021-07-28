@@ -1,8 +1,7 @@
 **/node_modules
-**/uploads/
 **yarn.lock
 **package-lock.json
 **.env
 **.env.production
-**nodemon.json
-**/build
+/frontend/build
+/backend/uploads/images/**
